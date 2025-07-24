@@ -21,6 +21,11 @@
     #rulesContent {
       display: none;
     }
+    .referral-link-container {
+      overflow-x: auto;
+      white-space: nowrap;
+      max-width: 100%;
+    }
   </style>
 </head>
 <body class="text-white">
@@ -78,8 +83,9 @@
         <h3 class="text-xl font-bold mb-4 text-green-300">💰 Referral Bonus</h3>
         <p class="mb-2">You have referred <span id="referralCount" class="font-bold">0</span> users.</p>
         <p>Invite your friends and earn <span class="font-bold">$1 USDT</span> for every valid referral. Share your unique referral link below:</p>
-        <div class="mt-4 bg-black bg-opacity-40 p-3 rounded-xl">
+        <div class="mt-4 bg-black bg-opacity-40 p-3 rounded-xl referral-link-container relative">
           <code id="referralLink">https://t.me/fomoTelegram_bot?start=ref_USERNAME</code>
+          <button onclick="copyReferralLink()" class="absolute top-1 right-1 bg-[#00ffd5] text-black px-4 py-1 text-sm font-semibold rounded hover:bg-[#00e6c2] transition">📋 Copy</button>
         </div>
       </section>
 
@@ -100,7 +106,7 @@
           <ul class="list-disc list-inside mt-2 space-y-1">
             <li><span class="font-semibold">10 Jackpot Winners</span> will receive <span class="font-bold">50,000 NOT</span> each.</li>
             <li><span class="font-semibold">15,000 Lucky Users</span> will receive <span class="font-bold">3,333 NOT</span> each.</li>
-            <li>Everyone else will receive a full refund of <span class="font-semibold">2 TON</span> to their wallet.</li>
+            <li>Everyone else will receive a full refund of <span class="font-bold">2 TON</span> to their wallet.</li>
           </ul>
         </div>
 
@@ -248,6 +254,13 @@ Join Now! https://telegramfomo.github.io/
         referralCountElement.textContent = '0';
       }
     });
+
+    window.copyReferralLink = () => {
+      const referralLink = document.getElementById('referralLink').textContent;
+      navigator.clipboard.writeText(referralLink).then(() => {
+        alert("Referral link copied to clipboard!");
+      });
+    };
 
     window.showRules = () => {
       document.getElementById('mainContent').style.display = 'none';
