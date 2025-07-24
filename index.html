@@ -76,6 +76,7 @@
 
       <section class="bg-white bg-opacity-10 backdrop-blur-lg p-6 rounded-2xl shadow-lg mb-10">
         <h3 class="text-xl font-bold mb-4 text-green-300">💰 Referral Bonus</h3>
+        <p class="mb-2">You have referred <span id="referralCount" class="font-bold">0</span> users.</p>
         <p>Invite your friends and earn <span class="font-bold">$1 USDT</span> for every valid referral. Share your unique referral link below:</p>
         <div class="mt-4 bg-black bg-opacity-40 p-3 rounded-xl">
           <code id="referralLink">https://t.me/fomoTelegram_bot?start=ref_USERNAME</code>
@@ -186,7 +187,7 @@ Join Now! https://telegramfomo.github.io/
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCJbHkhvgfbM1Hymh23jIePb9c-BbZz4_Y",
@@ -225,6 +226,27 @@ Join Now! https://telegramfomo.github.io/
     const connector = new TON_CONNECT_UI.TonConnectUI({
       manifestUrl: 'https://telegramfomo.github.io/tonconnect-manifest.json',
       buttonRootId: 'ton-connect',
+    });
+
+    // Update referral link and count with user's wallet address
+    connector.onStatusChange(wallet => {
+      const referralLinkElement = document.getElementById('referralLink');
+      const referralCountElement = document.getElementById('referralCount');
+      if (wallet && wallet.account && wallet.account.address) {
+        const userAddress = wallet.account.address;
+        referralLinkElement.textContent = `https://t.me/fomoTelegram_bot?start=ref_${userAddress}`;
+
+        // Fetch referral count from Firebase
+        const referralsRef = ref(database, `referrals/${userAddress}`);
+        onValue(referralsRef, (snapshot) => {
+          const referrals = snapshot.val();
+          const count = referrals ? Object.keys(referrals).length : 0;
+          referralCountElement.textContent = count;
+        });
+      } else {
+        referralLinkElement.textContent = 'https://t.me/fomoTelegram_bot?start=ref_USERNAME';
+        referralCountElement.textContent = '0';
+      }
     });
 
     window.showRules = () => {
