@@ -3,24 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>NFT Asset Manager | Studio</title>
-    <!-- JSZip Library -->
+    <title>NFT Manager Pro - Fixed Upload</title>
+    <!-- JSZip & FileSaver -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- FileSaver.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
-            background: linear-gradient(145deg, #0a0c12 0%, #10141c 100%);
+            background: linear-gradient(135deg, #0a0e1a 0%, #0f1322 100%);
             min-height: 100vh;
-            padding: 2rem 1.5rem;
-            color: #eef2ff;
+            padding: 2rem;
+            color: #edf2ff;
         }
 
         .container {
@@ -28,153 +27,215 @@
             margin: 0 auto;
         }
 
-        /* header */
+        /* Header */
         .header {
-            margin-bottom: 2rem;
             display: flex;
-            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            gap: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
             padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
-        h1 {
-            font-size: 1.9rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #FFFFFF, #a5b4fc);
+        .logo h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(120deg, #fff, #818cf8);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            letter-spacing: -0.3px;
         }
 
-        .sub {
-            color: #8f9bb3;
-            font-size: 0.9rem;
-            margin-top: 6px;
+        .logo p {
+            color: #7c8ba0;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 0.8rem;
-            flex-wrap: wrap;
+        .delete-all-btn {
+            background: rgba(220, 38, 38, 0.2);
+            border: 1px solid #ef4444;
+            color: #fecaca;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
         }
 
-        /* cards */
-        .upload-grid {
-            display: flex;
-            flex-wrap: wrap;
+        .delete-all-btn:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Upload Section */
+        .upload-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2.5rem;
         }
 
         .upload-card {
-            background: rgba(20, 25, 38, 0.7);
-            backdrop-filter: blur(6px);
-            border-radius: 2rem;
-            padding: 1.5rem 1.8rem;
-            flex: 1 1 280px;
-            border: 1px solid rgba(255,255,255,0.08);
-            transition: all 0.2s;
-            box-shadow: 0 15px 35px -12px rgba(0,0,0,0.4);
+            background: rgba(18, 24, 36, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(79, 70, 229, 0.3);
         }
 
         .upload-card h3 {
-            font-weight: 600;
-            margin-bottom: 1rem;
             font-size: 1.3rem;
+            margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.5rem;
         }
 
-        .upload-card input {
+        .upload-card .hint {
+            font-size: 0.7rem;
+            color: #8b9bb5;
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
             width: 100%;
-            background: #0f111a;
-            border: 1px solid #2a2f3f;
+            background: #0c0f18;
+            border: 1px solid #2d3548;
             padding: 0.7rem 1rem;
-            border-radius: 2rem;
+            border-radius: 1rem;
             color: white;
-            font-size: 0.85rem;
-            margin: 0.7rem 0;
+            margin: 0.8rem 0;
+            cursor: pointer;
         }
 
-        .upload-card button {
-            background: #2d3b5e;
+        .file-input:hover {
+            border-color: #6366f1;
+        }
+
+        .upload-btn {
+            background: #4f46e5;
             border: none;
-            padding: 0.6rem 1.2rem;
+            padding: 0.7rem 1.5rem;
             border-radius: 2rem;
-            font-weight: 500;
             color: white;
+            font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
-            margin-top: 6px;
+            width: 100%;
         }
 
-        .upload-card button.primary {
-            background: #4f46e5;
-            box-shadow: 0 4px 12px rgba(79,70,229,0.3);
-        }
-
-        .upload-card button.primary:hover {
+        .upload-btn:hover {
             background: #6366f1;
-            transform: scale(0.98);
+            transform: translateY(-2px);
         }
 
-        .status-badge {
+        .status {
+            margin-top: 0.8rem;
             font-size: 0.75rem;
-            background: #1e2538;
-            padding: 4px 12px;
-            border-radius: 20px;
+            padding: 0.4rem 0.8rem;
+            background: #1a1f2e;
+            border-radius: 2rem;
             display: inline-block;
-            margin-top: 10px;
         }
 
-        /* gallery */
+        .status.success {
+            background: #064e3b;
+            color: #86efac;
+        }
+
+        .status.error {
+            background: #7f1d1d;
+            color: #fecaca;
+        }
+
+        /* Gallery Header */
         .gallery-header {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
+            align-items: center;
             flex-wrap: wrap;
-            margin: 1rem 0 1.5rem 0;
+            margin: 2rem 0 1.5rem 0;
         }
 
+        .gallery-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .gallery-actions {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            color: #cbd5e1;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #2d3a4e;
+            border-color: #6366f1;
+            color: white;
+        }
+
+        /* NFT Grid - 3 Columns */
         .nft-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .nft-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            body {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .nft-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .nft-card {
-            background: #11161f;
-            border-radius: 1.5rem;
+            background: #111722;
+            border-radius: 1.2rem;
             overflow: hidden;
-            border: 1px solid #262e3e;
-            transition: all 0.2s ease;
+            border: 1px solid #252e3f;
+            transition: all 0.25s ease;
             cursor: pointer;
-            backdrop-filter: blur(4px);
         }
 
         .nft-card:hover {
-            transform: translateY(-5px);
-            border-color: #4f46e5;
-            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.5);
+            transform: translateY(-6px);
+            border-color: #6366f1;
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.5);
         }
 
-        .nft-img {
+        .nft-image {
             width: 100%;
-            aspect-ratio: 1 / 1;
-            background: #090c14;
+            aspect-ratio: 1;
+            background: #0a0e16;
             display: flex;
             align-items: center;
             justify-content: center;
-            object-fit: cover;
+            overflow: hidden;
         }
 
-        .nft-img img {
+        .nft-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -186,118 +247,126 @@
 
         .nft-name {
             font-weight: 700;
-            font-size: 1rem;
-            word-break: break-word;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .nft-meta-badge {
+        .nft-id {
             font-size: 0.7rem;
-            color: #a5b4fc;
-            margin-top: 6px;
+            color: #818cf8;
+            margin-top: 0.25rem;
         }
 
-        .delete-btn {
-            background: rgba(220, 38, 38, 0.2);
-            border: 1px solid #b91c1c;
+        .delete-nft-btn {
+            background: rgba(220, 38, 38, 0.15);
+            border: 1px solid #7f1d1d;
             color: #fca5a5;
+            padding: 0.4rem 0.8rem;
             border-radius: 2rem;
-            padding: 5px 12px;
             font-size: 0.7rem;
-            margin-top: 10px;
             width: 100%;
+            margin-top: 0.7rem;
             cursor: pointer;
             transition: 0.2s;
         }
 
-        .delete-btn:hover {
-            background: #b91c1c;
+        .delete-nft-btn:hover {
+            background: #dc2626;
             color: white;
         }
 
-        /* modal */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(12px);
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
 
         .modal-content {
-            background: #11161f;
-            max-width: 550px;
+            background: #111722;
+            max-width: 600px;
             width: 90%;
-            border-radius: 2rem;
-            padding: 1.8rem;
-            border: 1px solid #334155;
-            animation: fadeUp 0.2s ease;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid #4f46e5;
         }
 
         .modal-content img {
             width: 100%;
             border-radius: 1rem;
-            max-height: 300px;
-            object-fit: contain;
-            background: #0a0c12;
+            margin-bottom: 1rem;
         }
 
         .modal-close {
-            background: #2d3b5e;
+            background: #2d3748;
             border: none;
-            padding: 6px 16px;
+            padding: 0.5rem 1.2rem;
             border-radius: 2rem;
             color: white;
-            float: right;
             cursor: pointer;
+            float: right;
         }
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
-
-        .download-section {
-            background: rgba(15, 20, 30, 0.7);
-            border-radius: 1.5rem;
-            padding: 1.2rem 1.8rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: center;
-            justify-content: space-between;
+        .modal-meta {
+            background: #0c0f18;
+            padding: 1rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            overflow-x: auto;
             margin-top: 1rem;
         }
 
-        button.download-btn {
-            background: #1e2a3a;
-            border: 1px solid #3b4e6b;
-            padding: 0.6rem 1.3rem;
-            border-radius: 2rem;
-            color: #e2e8f0;
-            font-weight: 500;
-            transition: 0.2s;
-            cursor: pointer;
+        .deleted-section {
+            background: #0d1220;
+            border-radius: 1rem;
+            padding: 1rem 1.5rem;
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        button.download-btn:hover {
-            background: #2d3e5a;
-            border-color: #8197b3;
-        }
-
-        hr {
-            border-color: #1e293b;
-            margin: 1.2rem 0;
-        }
-
-        .footer-note {
+        .empty-state {
+            grid-column: 1 / -1;
             text-align: center;
-            font-size: 0.75rem;
-            color: #5b6e8c;
-            margin-top: 3rem;
+            padding: 3rem;
+            color: #6b7a95;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: monospace;
+            font-size: 0.7rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+            margin-right: 6px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -305,344 +374,350 @@
 
 <div class="container">
     <div class="header">
-        <div>
-            <h1>◈ NFT Asset Vault</h1>
-            <div class="sub">upload ZIP (images) + metadata ZIP → auto-match → gallery with metadata preview</div>
+        <div class="logo">
+            <h1>◈ NFT Vault Studio</h1>
+            <p>Upload ZIP (images) + ZIP (metadata) → Auto-match gallery (3 columns)</p>
         </div>
-        <div class="action-buttons">
-            <button id="clearAllBtn" style="background:#2d2a3e; border:1px solid #ef4444; color:#f9a8d4;">🗑 Delete All NFTs</button>
-        </div>
+        <button class="delete-all-btn" id="hardDeleteAllBtn">🗑 Delete All NFTs</button>
     </div>
 
-    <!-- upload area -->
-    <div class="upload-grid">
+    <div class="upload-row">
         <div class="upload-card">
             <h3>📸 1. Upload NFT Images (ZIP)</h3>
-            <p style="font-size:0.75rem; color:#9aa6c2;">expects: 1.png , 2.png ... 10000.png (any sequential naming)</p>
-            <input type="file" id="nftZipInput" accept=".zip">
-            <button id="uploadNftZipBtn" class="primary">⬆ Upload & Store NFT Images</button>
-            <div id="nftZipStatus" class="status-badge">No images loaded</div>
+            <div class="hint">✅ Supports: 1.png, 2.jpg, 3.png ... any sequential naming<br>📦 Any standard ZIP file</div>
+            <input type="file" id="imageZipInput" accept=".zip,.ZIP" class="file-input">
+            <button id="uploadImagesBtn" class="upload-btn">⬆ Upload & Store Images</button>
+            <div id="imageUploadStatus" class="status">⚡ Waiting for upload</div>
         </div>
 
         <div class="upload-card">
             <h3>📄 2. Upload Metadata (ZIP)</h3>
-            <p style="font-size:0.75rem; color:#9aa6c2;">expects: 1.json , 2.json ... 10000.json (matching names)</p>
-            <input type="file" id="metadataZipInput" accept=".zip">
-            <button id="uploadMetadataZipBtn" class="primary">📦 Upload & Match Metadata</button>
-            <div id="metaZipStatus" class="status-badge">No metadata loaded</div>
+            <div class="hint">✅ JSON files: 1.json, 2.json, 3.json ... matching image numbers</div>
+            <input type="file" id="metaZipInput" accept=".zip,.ZIP" class="file-input">
+            <button id="uploadMetadataBtn" class="upload-btn">📦 Upload & Match Metadata</button>
+            <div id="metaUploadStatus" class="status">⚡ Waiting for upload</div>
         </div>
     </div>
 
-    <!-- gallery header & stats -->
     <div class="gallery-header">
-        <div><span style="font-weight:700;">🎨 NFT Collection</span> <span id="nftCountDisplay">0 items</span></div>
-        <div style="display: flex; gap:10px;">
-            <button id="downloadAllImagesBtn" class="download-btn">⬇ Download ALL Images (ZIP)</button>
-            <button id="downloadAllMetadataBtn" class="download-btn">📑 Download ALL Metadata (ZIP)</button>
+        <div class="gallery-title">🎨 NFT Collection <span id="nftCount">(0 items)</span></div>
+        <div class="gallery-actions">
+            <button id="downloadAllImagesAction" class="action-btn">⬇ Download All Images (ZIP)</button>
+            <button id="downloadAllMetadataAction" class="action-btn">📑 Download All Metadata (ZIP)</button>
         </div>
     </div>
 
-    <!-- nft grid -->
-    <div id="nftGrid" class="nft-grid">
-        <!-- dynamic cards -->
+    <div id="nftGridContainer" class="nft-grid">
+        <div class="empty-state">✨ No NFTs available. Upload your ZIP files above.</div>
     </div>
 
-    <!-- modal preview -->
-    <div id="modalPreview" class="modal">
-        <div class="modal-content">
-            <span style="display:flex; justify-content: flex-end;"><button class="modal-close" id="closeModalBtn">✕ Close</button></span>
-            <div id="modalBody" style="margin-top: 1rem;">
-                <!-- dynamic -->
-            </div>
+    <div class="deleted-section">
+        <span>🗑 <strong>Deleted NFTs</strong> — Download as sequential ZIP (images + metadata together)</span>
+        <button id="downloadDeletedBundleBtn" class="action-btn" style="background:#2d2a4a; border-color:#7c3aed;">📦 Download Deleted Bundle</button>
+    </div>
+</div>
+
+<div id="nftModal" class="modal">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: flex-end;">
+            <button class="modal-close" id="closeModalBtn">✕ Close</button>
         </div>
-    </div>
-
-    <div class="download-section">
-        <span>🗃️ Deleted NFTs will reappear in next image ZIP download (serial 1..N) + metadata JSON</span>
-        <button id="downloadDeletedAsZipBtn" class="download-btn" style="background:#312e4d;">⚡ Download Deleted NFTs (ZIP + Meta)</button>
-    </div>
-    <div class="footer-note">
-        * All data persists in localStorage. Upload only valid ZIP files with PNG/JPG images & JSON metadata. Max thousands of items.
+        <div id="modalBodyContainer"></div>
     </div>
 </div>
 
 <script>
-    // ---------- STORAGE KEYS ----------
-    const STORAGE_NFT_MAP = "nft_storage_map";    // { id: "serialKey", imageBlobUrl? no, store as base64? actually store image as blob url? better store image dataURL and metadata object }
-    // we'll store image dataURL (string) and metadata (json object)
-    // structure: { "1": { imageDataURL: string, metadata: object, deleted: false } }
-    let nftRegistry = {};   // key = tokenId (like "1", "2", "3"...)
+    const STORAGE_KEY = "nft_complete_registry_v2";
+    let nftData = {};
 
-    // helper: load from localStorage
-    function loadFromLocalStorage() {
-        const stored = localStorage.getItem(STORAGE_NFT_MAP);
+    function loadData() {
+        const stored = localStorage.getItem(STORAGE_KEY);
         if(stored) {
-            nftRegistry = JSON.parse(stored);
-            // revive image DataURL is fine
+            try {
+                nftData = JSON.parse(stored);
+            } catch(e) {
+                nftData = {};
+            }
         } else {
-            nftRegistry = {};
+            nftData = {};
         }
         renderGallery();
     }
 
-    function persistToLocalStorage() {
-        localStorage.setItem(STORAGE_NFT_MAP, JSON.stringify(nftRegistry));
+    function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(nftData));
+        renderGallery();
     }
 
-    // helper: get max tokenId numeric (to handle sequential naming)
-    function getMaxTokenId() {
-        let max = 0;
-        Object.keys(nftRegistry).forEach(k => {
-            let num = parseInt(k,10);
-            if(!isNaN(num) && num > max) max = num;
-        });
-        return max;
-    }
-
-    // upload images zip (extract & store as dataURL)
-    document.getElementById("uploadNftZipBtn").addEventListener("click", async function() {
-        const fileInput = document.getElementById("nftZipInput");
-        const file = fileInput.files[0];
-        if(!file) { alert("Select a ZIP file with images (PNG/JPG)."); return; }
-        const statusDiv = document.getElementById("nftZipStatus");
-        statusDiv.innerText = "⏳ Processing images ZIP...";
-        try {
-            const zip = await JSZip.loadAsync(file);
-            const imageFiles = [];
-            // collect all .png/.jpg/.jpeg files
-            for(let [relPath, zipEntry] of Object.entries(zip.files)) {
-                if(!zipEntry.dir && (relPath.match(/\.(png|jpg|jpeg)$/i))) {
-                    const fileName = relPath.split('/').pop();
-                    imageFiles.push({ fileName, zipEntry });
-                }
-            }
-            // sort by numeric prefix? e.g., 1.png -> tokenId=1
-            for(let item of imageFiles) {
-                let baseName = item.fileName.replace(/\.(png|jpe?g)$/i,'');
-                let tokenIdNum = parseInt(baseName,10);
-                if(isNaN(tokenIdNum)) continue;
-                let tokenIdStr = tokenIdNum.toString();
-                // read as base64 dataURL
-                const arrayBuffer = await item.zipEntry.async("arraybuffer");
-                const mimeType = item.fileName.endsWith('.png') ? 'image/png' : 'image/jpeg';
-                const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-                const dataURL = `data:${mimeType};base64,${base64}`;
-                if(!nftRegistry[tokenIdStr]) {
-                    nftRegistry[tokenIdStr] = { imageDataURL: dataURL, metadata: null, deleted: false };
-                } else {
-                    nftRegistry[tokenIdStr].imageDataURL = dataURL;
-                    if(!nftRegistry[tokenIdStr].deleted) nftRegistry[tokenIdStr].deleted = false;
-                }
-            }
-            persistToLocalStorage();
-            statusDiv.innerText = `✅ Loaded ${imageFiles.length} NFT images.`;
-            renderGallery();
-        } catch(e) {
-            console.error(e);
-            statusDiv.innerText = "❌ Error parsing ZIP";
-        }
-    });
-
-    // upload metadata zip (match 1.json, 2.json ...)
-    document.getElementById("uploadMetadataZipBtn").addEventListener("click", async function() {
-        const fileInput = document.getElementById("metadataZipInput");
-        const file = fileInput.files[0];
-        if(!file) { alert("Select metadata ZIP file with .json files"); return; }
-        const metaStatus = document.getElementById("metaZipStatus");
-        metaStatus.innerText = "⏳ Processing metadata...";
-        try {
-            const zip = await JSZip.loadAsync(file);
-            let matchedCount = 0;
-            for(let [relPath, zipEntry] of Object.entries(zip.files)) {
-                if(!zipEntry.dir && relPath.match(/\.json$/i)) {
-                    let fileName = relPath.split('/').pop();
-                    let baseName = fileName.replace(/\.json$/i,'');
-                    let tokenIdNum = parseInt(baseName,10);
-                    if(isNaN(tokenIdNum)) continue;
-                    let tokenId = tokenIdNum.toString();
-                    const jsonText = await zipEntry.async("string");
-                    try {
-                        const metadataObj = JSON.parse(jsonText);
-                        if(!nftRegistry[tokenId]) {
-                            nftRegistry[tokenId] = { imageDataURL: null, metadata: metadataObj, deleted: false };
-                        } else {
-                            nftRegistry[tokenId].metadata = metadataObj;
-                            if(nftRegistry[tokenId].deleted === undefined) nftRegistry[tokenId].deleted = false;
-                        }
-                        matchedCount++;
-                    } catch(e) { console.warn(`invalid json ${fileName}`); }
-                }
-            }
-            persistToLocalStorage();
-            metaStatus.innerText = `✅ Matched ${matchedCount} metadata files.`;
-            renderGallery();
-        } catch(e) {
-            metaStatus.innerText = "❌ Metadata zip error";
-        }
-    });
-
-    // render gallery (non-deleted items + sorted by tokenId numeric)
     function renderGallery() {
-        const grid = document.getElementById("nftGrid");
-        const countSpan = document.getElementById("nftCountDisplay");
-        // filter out deleted
-        let activeTokens = Object.keys(nftRegistry).filter(k => !nftRegistry[k].deleted);
-        activeTokens.sort((a,b) => parseInt(a,10) - parseInt(b,10));
-        countSpan.innerText = `${activeTokens.length} NFTs`;
+        const container = document.getElementById("nftGridContainer");
+        const countSpan = document.getElementById("nftCount");
+        
+        const activeTokens = Object.keys(nftData).filter(id => !nftData[id].deleted);
+        activeTokens.sort((a,b) => parseInt(a) - parseInt(b));
+        
+        countSpan.innerHTML = `(${activeTokens.length} items)`;
+        
         if(activeTokens.length === 0) {
-            grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:3rem;">✨ No NFTs available. Upload images & metadata.</div>`;
+            container.innerHTML = `<div class="empty-state">✨ No NFTs available. Upload your ZIP files above.</div>`;
             return;
         }
+        
         let html = "";
         for(let tokenId of activeTokens) {
-            const nft = nftRegistry[tokenId];
-            const imgSrc = nft.imageDataURL || "https://placehold.co/400x400?text=No+Image";
-            const metaTitle = nft.metadata?.name || `NFT #${tokenId}`;
+            const item = nftData[tokenId];
+            const imgSrc = item.imageDataURL || "https://placehold.co/400x400/1e293b/818cf8?text=No+Image";
+            const displayName = item.metadata?.name || `NFT #${tokenId}`;
             html += `
-                <div class="nft-card" data-tokenid="${tokenId}">
-                    <div class="nft-img">
-                        <img src="${imgSrc}" alt="nft" onerror="this.src='https://placehold.co/400x400?text=missing'">
+                <div class="nft-card" data-id="${tokenId}">
+                    <div class="nft-image">
+                        <img src="${imgSrc}" alt="nft" onerror="this.src='https://placehold.co/400x400/1e293b/ef4444?text=Error'">
                     </div>
                     <div class="nft-info">
-                        <div class="nft-name">${escapeHtml(metaTitle)}</div>
-                        <div class="nft-meta-badge">ID: ${tokenId}</div>
-                        <button class="delete-btn" data-id="${tokenId}">🗑 Delete NFT</button>
+                        <div class="nft-name" title="${escapeHtml(displayName)}">${escapeHtml(displayName.substring(0, 30))}</div>
+                        <div class="nft-id">ID: ${tokenId}</div>
+                        <button class="delete-nft-btn" data-id="${tokenId}">🗑 Delete</button>
                     </div>
                 </div>
             `;
         }
-        grid.innerHTML = html;
-        // attach delete events
-        document.querySelectorAll(".delete-btn").forEach(btn => {
+        container.innerHTML = html;
+        
+        document.querySelectorAll(".delete-nft-btn").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 e.stopPropagation();
-                const tokenId = btn.getAttribute("data-id");
-                if(tokenId && nftRegistry[tokenId]) {
-                    nftRegistry[tokenId].deleted = true;
-                    persistToLocalStorage();
-                    renderGallery();
+                const id = btn.getAttribute("data-id");
+                if(id && nftData[id]) {
+                    nftData[id].deleted = true;
+                    saveData();
                 }
             });
         });
-        // attach click on nft-card for detailed view
+        
         document.querySelectorAll(".nft-card").forEach(card => {
             card.addEventListener("click", (e) => {
-                if(e.target.classList.contains("delete-btn")) return;
-                const tokenId = card.getAttribute("data-tokenid");
-                if(tokenId) showNftDetails(tokenId);
+                if(e.target.classList.contains("delete-nft-btn")) return;
+                const id = card.getAttribute("data-id");
+                if(id) showModal(id);
             });
         });
     }
-
-    function showNftDetails(tokenId) {
-        const nft = nftRegistry[tokenId];
-        if(!nft) return;
-        const modal = document.getElementById("modalPreview");
-        const modalBody = document.getElementById("modalBody");
-        const imgSrc = nft.imageDataURL || "https://placehold.co/400x400?text=No+Image";
-        const metadata = nft.metadata || { description: "No metadata uploaded" };
-        const prettyMeta = JSON.stringify(metadata, null, 2);
+    
+    function showModal(tokenId) {
+        const item = nftData[tokenId];
+        if(!item) return;
+        const modal = document.getElementById("nftModal");
+        const modalBody = document.getElementById("modalBodyContainer");
+        const imgSrc = item.imageDataURL || "https://placehold.co/400x400/1e293b/818cf8?text=No+Image";
+        const metadata = item.metadata || { message: "No metadata uploaded for this NFT" };
+        const prettyJson = JSON.stringify(metadata, null, 2);
         modalBody.innerHTML = `
-            <img src="${imgSrc}" style="width:100%; max-height: 280px; object-fit: contain; border-radius: 1rem;">
-            <div style="margin-top: 1.2rem;">
-                <strong style="font-size:1.2rem;">Token #${tokenId}</strong>
-                <pre style="background:#0a0c14; padding: 0.8rem; border-radius: 1rem; overflow-x: auto; font-size: 0.7rem; margin-top: 12px; color:#cbd5e6;">${escapeHtml(prettyMeta)}</pre>
+            <img src="${imgSrc}" alt="NFT ${tokenId}">
+            <h3 style="margin: 0.5rem 0;">Token #${tokenId}</h3>
+            <div class="modal-meta">
+                <strong>📄 Metadata:</strong>
+                <pre>${escapeHtml(prettyJson)}</pre>
             </div>
         `;
         modal.style.display = "flex";
     }
-
-    document.getElementById("closeModalBtn").addEventListener("click", () => {
-        document.getElementById("modalPreview").style.display = "none";
-    });
-    window.onclick = function(e) {
-        const modal = document.getElementById("modalPreview");
-        if(e.target === modal) modal.style.display = "none";
+    
+    async function processImageZip(file) {
+        const statusDiv = document.getElementById("imageUploadStatus");
+        if(!file) {
+            statusDiv.innerHTML = "❌ No file selected";
+            statusDiv.className = "status error";
+            return false;
+        }
+        
+        statusDiv.innerHTML = "<span class='loading'></span> Processing images ZIP...";
+        statusDiv.className = "status";
+        
+        try {
+            const zip = await JSZip.loadAsync(file);
+            let imageEntries = [];
+            
+            for(let [path, entry] of Object.entries(zip.files)) {
+                if(!entry.dir && /\.(png|jpg|jpeg|gif|webp|PNG|JPG|JPEG)$/i.test(path)) {
+                    const filename = path.split('/').pop();
+                    if(filename && filename.match(/\.(png|jpg|jpeg|gif|webp)$/i)) {
+                        imageEntries.push({ filename, entry });
+                    }
+                }
+            }
+            
+            if(imageEntries.length === 0) {
+                statusDiv.innerHTML = "❌ No image files found in ZIP (PNG/JPG/JPEG required)";
+                statusDiv.className = "status error";
+                return false;
+            }
+            
+            let loadedCount = 0;
+            for(let img of imageEntries) {
+                let basename = img.filename.replace(/\.(png|jpg|jpeg|gif|webp)$/i, '');
+                let tokenNum = parseInt(basename, 10);
+                if(isNaN(tokenNum)) continue;
+                let tokenId = tokenNum.toString();
+                
+                const arrayBuffer = await img.entry.async("arraybuffer");
+                const fileExt = img.filename.split('.').pop().toLowerCase();
+                let mimeType = 'image/jpeg';
+                if(fileExt === 'png') mimeType = 'image/png';
+                if(fileExt === 'gif') mimeType = 'image/gif';
+                if(fileExt === 'webp') mimeType = 'image/webp';
+                
+                const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+                const dataURL = `data:${mimeType};base64,${base64}`;
+                
+                if(!nftData[tokenId]) {
+                    nftData[tokenId] = { imageDataURL: dataURL, metadata: null, deleted: false };
+                } else {
+                    nftData[tokenId].imageDataURL = dataURL;
+                    if(nftData[tokenId].deleted === undefined) nftData[tokenId].deleted = false;
+                }
+                loadedCount++;
+            }
+            
+            saveData();
+            statusDiv.innerHTML = `✅ Success! Loaded ${loadedCount} images. Total NFTs: ${Object.keys(nftData).length}`;
+            statusDiv.className = "status success";
+            return true;
+            
+        } catch(err) {
+            console.error("Upload error:", err);
+            statusDiv.innerHTML = `❌ Error: ${err.message || "Invalid ZIP file"}`;
+            statusDiv.className = "status error";
+            return false;
+        }
     }
-
-    // download all active images as zip preserving serial order (1.png, 2.png ...)
-    document.getElementById("downloadAllImagesBtn").addEventListener("click", async () => {
-        const activeTokens = Object.keys(nftRegistry).filter(k => !nftRegistry[k].deleted);
-        if(activeTokens.length === 0) { alert("No active NFTs to download."); return; }
-        activeTokens.sort((a,b) => parseInt(a,10) - parseInt(b,10));
+    
+    async function processMetadataZip(file) {
+        const statusDiv = document.getElementById("metaUploadStatus");
+        if(!file) {
+            statusDiv.innerHTML = "❌ No file selected";
+            statusDiv.className = "status error";
+            return false;
+        }
+        
+        statusDiv.innerHTML = "<span class='loading'></span> Processing metadata ZIP...";
+        statusDiv.className = "status";
+        
+        try {
+            const zip = await JSZip.loadAsync(file);
+            let matched = 0;
+            
+            for(let [path, entry] of Object.entries(zip.files)) {
+                if(!entry.dir && /\.json$/i.test(path)) {
+                    const filename = path.split('/').pop();
+                    let basename = filename.replace(/\.json$/i, '');
+                    let tokenNum = parseInt(basename, 10);
+                    if(isNaN(tokenNum)) continue;
+                    let tokenId = tokenNum.toString();
+                    
+                    const jsonText = await entry.async("string");
+                    try {
+                        const metaObj = JSON.parse(jsonText);
+                        if(!nftData[tokenId]) {
+                            nftData[tokenId] = { imageDataURL: null, metadata: metaObj, deleted: false };
+                        } else {
+                            nftData[tokenId].metadata = metaObj;
+                            if(nftData[tokenId].deleted === undefined) nftData[tokenId].deleted = false;
+                        }
+                        matched++;
+                    } catch(e) {
+                        console.warn(`Invalid JSON in ${filename}`);
+                    }
+                }
+            }
+            
+            saveData();
+            statusDiv.innerHTML = `✅ Success! Matched ${matched} metadata files.`;
+            statusDiv.className = "status success";
+            return true;
+            
+        } catch(err) {
+            console.error("Metadata error:", err);
+            statusDiv.innerHTML = `❌ Error: ${err.message || "Invalid metadata ZIP"}`;
+            statusDiv.className = "status error";
+            return false;
+        }
+    }
+    
+    async function downloadActiveImages() {
+        const active = Object.keys(nftData).filter(id => !nftData[id].deleted);
+        if(active.length === 0) { alert("No active NFTs to download"); return; }
+        active.sort((a,b) => parseInt(a) - parseInt(b));
+        
         const zip = new JSZip();
-        for(let tokenId of activeTokens) {
-            const nft = nftRegistry[tokenId];
-            if(nft.imageDataURL) {
-                const dataURL = nft.imageDataURL;
+        for(let id of active) {
+            const item = nftData[id];
+            if(item.imageDataURL) {
+                const dataURL = item.imageDataURL;
+                const matches = dataURL.match(/^data:image\/(\w+);base64,/);
+                const ext = matches ? (matches[1] === 'png' ? 'png' : 'jpg') : 'png';
                 const base64Data = dataURL.split(',')[1];
-                const mime = dataURL.match(/:(.*?);/)[1];
-                const ext = mime === 'image/png' ? 'png' : 'jpg';
-                const fileName = `${tokenId}.${ext}`;
-                zip.file(fileName, base64Data, { base64: true });
+                zip.file(`${id}.${ext}`, base64Data, { base64: true });
             } else {
-                // placeholder if no image
-                zip.file(`${tokenId}.png`, "data:image/png;base64,iVB...", { base64: false }); // ignore but minimal
+                zip.file(`${id}.png`, "Image not available");
             }
         }
-        const content = await zip.generateAsync({ type: "blob" });
-        saveAs(content, `nft_images_${Date.now()}.zip`);
-    });
-
-    // download all metadata as separate zip (1.json, 2.json ...)
-    document.getElementById("downloadAllMetadataBtn").addEventListener("click", async () => {
-        const activeTokens = Object.keys(nftRegistry).filter(k => !nftRegistry[k].deleted);
-        if(activeTokens.length === 0) { alert("No metadata to export."); return; }
-        activeTokens.sort((a,b) => parseInt(a,10) - parseInt(b,10));
+        const blob = await zip.generateAsync({ type: "blob" });
+        saveAs(blob, `nft_images_${Date.now()}.zip`);
+    }
+    
+    async function downloadActiveMetadata() {
+        const active = Object.keys(nftData).filter(id => !nftData[id].deleted);
+        if(active.length === 0) { alert("No active metadata to download"); return; }
+        active.sort((a,b) => parseInt(a) - parseInt(b));
+        
         const zip = new JSZip();
-        for(let tokenId of activeTokens) {
-            const nft = nftRegistry[tokenId];
-            let metaObj = nft.metadata ? nft.metadata : { name: `NFT ${tokenId}`, description: "No metadata uploaded" };
-            const jsonStr = JSON.stringify(metaObj, null, 2);
-            zip.file(`${tokenId}.json`, jsonStr);
+        for(let id of active) {
+            const item = nftData[id];
+            const meta = item.metadata || { name: `NFT ${id}`, description: "Metadata not available" };
+            zip.file(`${id}.json`, JSON.stringify(meta, null, 2));
         }
         const blob = await zip.generateAsync({ type: "blob" });
         saveAs(blob, `nft_metadata_${Date.now()}.zip`);
-    });
-
-    // DELETE ALL NFTs (hard delete, remove from registry)
-    document.getElementById("clearAllBtn").addEventListener("click", () => {
-        if(confirm("⚠️ This will permanently DELETE ALL NFTs (active + deleted flag reset). Continue?")) {
-            nftRegistry = {};
-            persistToLocalStorage();
-            renderGallery();
-        }
-    });
-
-    // DOWNLOAD DELETED NFTs: Zip with images & metadata matching serial number (only those marked deleted)
-    document.getElementById("downloadDeletedAsZipBtn").addEventListener("click", async () => {
-        const deletedTokens = Object.keys(nftRegistry).filter(k => nftRegistry[k].deleted === true);
+    }
+    
+    async function downloadDeletedBundle() {
+        const deletedTokens = Object.keys(nftData).filter(id => nftData[id].deleted === true);
         if(deletedTokens.length === 0) { alert("No deleted NFTs found."); return; }
-        deletedTokens.sort((a,b) => parseInt(a,10) - parseInt(b,10)); // serial 1..N order
+        deletedTokens.sort((a,b) => parseInt(a) - parseInt(b));
+        
         const imagesZip = new JSZip();
         const metadataZip = new JSZip();
-        for(let tokenId of deletedTokens) {
-            const nft = nftRegistry[tokenId];
-            // image
-            if(nft.imageDataURL) {
-                const base64Data = nft.imageDataURL.split(',')[1];
-                const mime = nft.imageDataURL.match(/:(.*?);/)[1];
-                const ext = mime === 'image/png' ? 'png' : 'jpg';
-                imagesZip.file(`${tokenId}.${ext}`, base64Data, { base64: true });
+        
+        for(let id of deletedTokens) {
+            const item = nftData[id];
+            if(item.imageDataURL) {
+                const matches = item.imageDataURL.match(/^data:image\/(\w+);base64,/);
+                const ext = matches ? (matches[1] === 'png' ? 'png' : 'jpg') : 'png';
+                const base64Data = item.imageDataURL.split(',')[1];
+                imagesZip.file(`${id}.${ext}`, base64Data, { base64: true });
             } else {
-                imagesZip.file(`${tokenId}.png`, "empty fallback");
+                imagesZip.file(`${id}.png`, "No image");
             }
-            // metadata
-            let metaObj = nft.metadata ? nft.metadata : { name: `Deleted NFT #${tokenId}` };
-            metadataZip.file(`${tokenId}.json`, JSON.stringify(metaObj, null, 2));
+            const metaObj = item.metadata || { name: `Deleted NFT ${id}` };
+            metadataZip.file(`${id}.json`, JSON.stringify(metaObj, null, 2));
         }
-        // combine two separate downloads? requirement: download zip with images and metadata zip? better to give both options: one archive with images + separate json?
-        // As per spec: "সবগুলো ডিলিট করা হবে সব গুলো আবার ডাউনলোড এর সময় সিরিয়াল অনুযায়ী ডাউনলোড হবে 1.png থেকে 10000.png জিপ ফাইল আকারে একসাথে এবং প্রতি টা nft এর মেটাডাটা তারনাম অনুযায়ী হবে যেমন 1.png এরটা 1.json হবে"
-        // That means: when downloading deleted set, we provide both zip files (one for images, one for metadata) but can combine in one action? Provide both downloads.
-        const finalZip = new JSZip();
-        const imgsBlob = await imagesZip.generateAsync({ type: "blob" });
+        
+        const masterZip = new JSZip();
+        const imgBlob = await imagesZip.generateAsync({ type: "blob" });
         const metaBlob = await metadataZip.generateAsync({ type: "blob" });
-        finalZip.file("deleted_images.zip", imgsBlob);
-        finalZip.file("deleted_metadata.zip", metaBlob);
-        const containerBlob = await finalZip.generateAsync({ type: "blob" });
-        saveAs(containerBlob, `deleted_nfts_bundle_${Date.now()}.zip`);
-    });
-
+        masterZip.file("images.zip", imgBlob);
+        masterZip.file("metadata.zip", metaBlob);
+        const finalBlob = await masterZip.generateAsync({ type: "blob" });
+        saveAs(finalBlob, `deleted_nfts_bundle_${Date.now()}.zip`);
+    }
+    
+    function hardDeleteAll() {
+        if(confirm("⚠️ WARNING: This will permanently DELETE ALL NFTs (images + metadata). Cannot undo. Proceed?")) {
+            nftData = {};
+            saveData();
+        }
+    }
+    
     function escapeHtml(str) {
         if(!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -652,9 +727,41 @@
             return m;
         });
     }
-
-    // initial load
-    loadFromLocalStorage();
+    
+    document.getElementById("uploadImagesBtn").addEventListener("click", async () => {
+        const fileInput = document.getElementById("imageZipInput");
+        if(!fileInput.files || fileInput.files.length === 0) {
+            alert("Please select a ZIP file first");
+            return;
+        }
+        await processImageZip(fileInput.files[0]);
+        fileInput.value = '';
+    });
+    
+    document.getElementById("uploadMetadataBtn").addEventListener("click", async () => {
+        const fileInput = document.getElementById("metaZipInput");
+        if(!fileInput.files || fileInput.files.length === 0) {
+            alert("Please select a metadata ZIP file");
+            return;
+        }
+        await processMetadataZip(fileInput.files[0]);
+        fileInput.value = '';
+    });
+    
+    document.getElementById("downloadAllImagesAction").addEventListener("click", downloadActiveImages);
+    document.getElementById("downloadAllMetadataAction").addEventListener("click", downloadActiveMetadata);
+    document.getElementById("downloadDeletedBundleBtn").addEventListener("click", downloadDeletedBundle);
+    document.getElementById("hardDeleteAllBtn").addEventListener("click", hardDeleteAll);
+    
+    document.getElementById("closeModalBtn").addEventListener("click", () => {
+        document.getElementById("nftModal").style.display = "none";
+    });
+    window.onclick = (e) => {
+        const modal = document.getElementById("nftModal");
+        if(e.target === modal) modal.style.display = "none";
+    };
+    
+    loadData();
 </script>
 </body>
 </html>
