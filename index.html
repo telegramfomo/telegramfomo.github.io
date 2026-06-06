@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>NFT Studio Pro | Bulk Metadata Editor + CID Generator</title>
+    <title>NFT Studio Pro | Auto-Renumber + CID Editor</title>
     <!-- JSZip & FileSaver -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -27,7 +27,6 @@
             margin: 0 auto;
         }
 
-        /* Header */
         .header {
             display: flex;
             justify-content: space-between;
@@ -53,7 +52,6 @@
             margin-top: 0.25rem;
         }
 
-        /* Bulk Edit Panel */
         .bulk-edit-panel {
             background: linear-gradient(135deg, #1a1f2e, #131826);
             border-radius: 1.5rem;
@@ -73,7 +71,7 @@
 
         .bulk-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
         }
 
@@ -132,7 +130,6 @@
             background: #6366f1;
         }
 
-        /* Upload Section */
         .upload-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -216,7 +213,6 @@
             transition: width 0.3s;
         }
 
-        /* Gallery Header */
         .gallery-header {
             display: flex;
             justify-content: space-between;
@@ -248,7 +244,6 @@
             color: white;
         }
 
-        /* NFT Grid - 3 Columns */
         .nft-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -330,7 +325,6 @@
             color: white;
         }
 
-        /* Modal - NFT Market Style */
         .modal {
             display: none;
             position: fixed;
@@ -408,23 +402,19 @@
             cursor: pointer;
         }
 
-        .deleted-section {
-            background: #0d1220;
-            border-radius: 1rem;
-            padding: 1rem 1.5rem;
-            margin-top: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
         .empty-state {
             grid-column: 1 / -1;
             text-align: center;
             padding: 3rem;
             color: #6b7a95;
+        }
+        
+        .info-badge {
+            background: #1e293b;
+            border-radius: 2rem;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.7rem;
+            color: #a5b4fc;
         }
     </style>
 </head>
@@ -434,23 +424,24 @@
     <div class="header">
         <div class="logo">
             <h1>◈ NFT Studio Pro</h1>
-            <p>Bulk Metadata Editor | CID Generator | NFT Marketplace Style View</p>
+            <p>Auto-Renumber after Delete | Bulk CID Generator | Sequential Export</p>
         </div>
+        <div class="info-badge">✨ Dynamic re-indexing: IDs always 1..N</div>
     </div>
 
     <!-- Bulk Edit Panel -->
     <div class="bulk-edit-panel">
         <div class="bulk-title">
-            🔧 Bulk Metadata Editor
+            🔧 Bulk Metadata Editor (applies to all active NFTs)
         </div>
         <div class="bulk-grid">
             <div class="bulk-field">
-                <label>📝 NFT Name (applies to ALL NFTs)</label>
-                <input type="text" id="bulkNameInput" placeholder="e.g., PUNK #{{id}} or My NFT Collection">
-                <small style="color:#7c8ba0; display:block; margin-top:4px;">Use {{id}} for automatic token ID</small>
+                <label>📝 NFT Name Template</label>
+                <input type="text" id="bulkNameInput" placeholder="e.g., Mystic #{{id}} or MyArt">
+                <small style="color:#7c8ba0; display:block; margin-top:4px;">{{id}} = new auto serial (1,2,3...)</small>
             </div>
             <div class="bulk-field">
-                <label>📄 Description (applies to ALL NFTs)</label>
+                <label>📄 Description</label>
                 <textarea id="bulkDescInput" placeholder="Enter description for all NFTs..."></textarea>
             </div>
             <div class="bulk-field">
@@ -459,17 +450,17 @@
                     <input type="text" id="cidBaseInput" placeholder="QmXVuV********HpFvg" value="QmXVuV123456789HpFvg">
                     <span style="color:#818cf8;">/</span>
                 </div>
-                <small style="color:#7c8ba0; display:block; margin-top:4px;">Auto appends: 1.png, 2.png, etc.</small>
+                <small>Auto appends: 1.png, 2.png etc based on NEW index</small>
             </div>
         </div>
-        <button id="applyBulkChangesBtn" class="apply-btn">✨ Apply to All NFTs (Update Metadata)</button>
+        <button id="applyBulkChangesBtn" class="apply-btn">✨ Apply to All Active NFTs</button>
     </div>
 
     <!-- Upload Section -->
     <div class="upload-row">
         <div class="upload-card">
             <h3>📸 1. Upload NFT Images (ZIP)</h3>
-            <div class="hint">Supports: 1.png, 2.jpg ... 10000+ files</div>
+            <div class="hint">Files: 1.png, 2.jpg, 3.png ... (any names, will renumber after delete)</div>
             <input type="file" id="imageZipInput" accept=".zip" class="file-input">
             <button id="uploadImagesBtn" class="upload-btn">Upload Images</button>
             <div class="progress-bar" id="uploadProgressBar" style="display:none;">
@@ -480,7 +471,7 @@
 
         <div class="upload-card">
             <h3>📄 2. Upload or Update Metadata (ZIP)</h3>
-            <div class="hint">JSON files: 1.json, 2.json (will be merged with bulk edits)</div>
+            <div class="hint">JSON files: 1.json, 2.json (will merge & auto-renumber)</div>
             <input type="file" id="metaZipInput" accept=".zip" class="file-input">
             <button id="uploadMetadataBtn" class="upload-btn">Upload Metadata</button>
             <div id="metaUploadStatus" class="status">Ready</div>
@@ -488,10 +479,10 @@
     </div>
 
     <div class="gallery-header">
-        <div><strong>🎨 NFT Collection</strong> <span id="nftCount">(0 items)</span></div>
+        <div><strong>🎨 NFT Collection</strong> <span id="nftCount">(0 items)</span> — <span style="font-size:12px;color:#a5b4fc;">IDs automatically re-indexed after deletions</span></div>
         <div class="gallery-actions">
-            <button id="downloadAllImagesAction" class="action-btn">⬇ Download Images ZIP</button>
-            <button id="downloadAllMetadataAction" class="action-btn">📑 Download Metadata ZIP</button>
+            <button id="downloadAllImagesAction" class="action-btn">⬇ Download Images (renamed 1..N)</button>
+            <button id="downloadAllMetadataAction" class="action-btn">📑 Download Metadata (renumbered)</button>
             <button id="downloadDeletedBundleBtn" class="action-btn">📦 Download Deleted Bundle</button>
             <button id="hardDeleteAllBtn" class="action-btn" style="border-color:#ef4444;">🗑 Delete All</button>
         </div>
@@ -513,10 +504,10 @@
 </div>
 
 <script>
-    // IndexedDB Setup
-    const DB_NAME = 'NFTDatabaseV2';
-    const DB_VERSION = 2;
-    const STORE_NAME = 'nftStoreV2';
+    // IndexedDB: each NFT has originalTokenId (original number from import) + displayIndex (dynamic sequential)
+    const DB_NAME = 'NFTDatabaseAutoRenumber';
+    const DB_VERSION = 3;
+    const STORE_NAME = 'nftsStore';
     let db = null;
     let currentCIDBase = "QmXVuV123456789HpFvg";
 
@@ -531,25 +522,32 @@
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    const store = db.createObjectStore(STORE_NAME, { keyPath: 'tokenId' });
+                    const store = db.createObjectStore(STORE_NAME, { keyPath: 'originalId' });
                     store.createIndex('deleted', 'deleted');
+                    store.createIndex('displayIndex', 'displayIndex');
+                } else {
+                    // migration: ensure displayIndex exists
+                    const store = event.target.transaction.objectStore(STORE_NAME);
+                    if (!store.indexNames.contains('displayIndex')) {
+                        store.createIndex('displayIndex', 'displayIndex');
+                    }
                 }
             };
         });
     }
 
-    async function saveNFT(tokenId, imageDataURL, metadata, deleted = false) {
+    async function saveNFT(originalId, imageDataURL, metadata, deleted = false, displayIndex = null) {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([STORE_NAME], 'readwrite');
             const store = transaction.objectStore(STORE_NAME);
-            const record = { tokenId: parseInt(tokenId), imageDataURL, metadata, deleted, updatedAt: Date.now() };
+            const record = { originalId: parseInt(originalId), imageDataURL, metadata, deleted, updatedAt: Date.now(), displayIndex };
             const request = store.put(record);
             request.onsuccess = () => resolve();
             request.onerror = () => reject(request.error);
         });
     }
 
-    async function getAllNFTs() {
+    async function getAllNFTsRaw() {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([STORE_NAME], 'readonly');
             const store = transaction.objectStore(STORE_NAME);
@@ -559,22 +557,39 @@
         });
     }
 
-    async function getNFT(tokenId) {
+    async function getNFTByOriginalId(originalId) {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([STORE_NAME], 'readonly');
             const store = transaction.objectStore(STORE_NAME);
-            const request = store.get(parseInt(tokenId));
+            const request = store.get(parseInt(originalId));
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
     }
 
-    async function updateDeletedStatus(tokenId, deleted) {
-        const nft = await getNFT(tokenId);
-        if (nft) {
-            nft.deleted = deleted;
-            await saveNFT(tokenId, nft.imageDataURL, nft.metadata, deleted);
+    async function updateDeletedStatusAndRenumber(originalId, deleted) {
+        const nft = await getNFTByOriginalId(originalId);
+        if (!nft) return;
+        nft.deleted = deleted;
+        await saveNFT(nft.originalId, nft.imageDataURL, nft.metadata, nft.deleted, nft.displayIndex);
+        await renumberAllActiveNFTs();
+    }
+
+    // CORE: renumber all active NFTs sequentially from 1...N based on originalId order (or any stable order)
+    async function renumberAllActiveNFTs() {
+        const all = await getAllNFTsRaw();
+        const active = all.filter(n => !n.deleted).sort((a,b) => a.originalId - b.originalId);
+        // assign new displayIndex 1..N
+        for (let i = 0; i < active.length; i++) {
+            const nft = active[i];
+            const newIndex = i + 1;
+            if (nft.displayIndex !== newIndex) {
+                nft.displayIndex = newIndex;
+                // also update metadata name if contains dynamic pattern? not forced, but we'll keep metadata custom, but preserve image CID pattern later
+                await saveNFT(nft.originalId, nft.imageDataURL, nft.metadata, nft.deleted, newIndex);
+            }
         }
+        await renderGallery();
     }
 
     async function clearAllNFTs() {
@@ -587,52 +602,42 @@
         });
     }
 
-    // Apply bulk edits to all NFTs
     async function applyBulkEdits() {
         const bulkName = document.getElementById("bulkNameInput").value;
         const bulkDesc = document.getElementById("bulkDescInput").value;
         const cidBase = document.getElementById("cidBaseInput").value;
         if (cidBase) currentCIDBase = cidBase;
 
-        const allNFTs = await getAllNFTs();
+        const all = await getAllNFTsRaw();
+        const active = all.filter(n => !n.deleted);
         let updatedCount = 0;
-
-        for (let nft of allNFTs) {
+        for (let nft of active) {
             let updatedMeta = nft.metadata || {};
-            
             if (bulkName) {
-                let finalName = bulkName.replace(/{{id}}/g, nft.tokenId);
+                let finalName = bulkName.replace(/{{id}}/g, nft.displayIndex);
                 updatedMeta.name = finalName;
             }
-            if (bulkDesc) {
-                updatedMeta.description = bulkDesc;
-            }
-            // Update image path with CID
-            updatedMeta.image = `${currentCIDBase}/${nft.tokenId}.png`;
-            
-            await saveNFT(nft.tokenId.toString(), nft.imageDataURL, updatedMeta, nft.deleted);
+            if (bulkDesc) updatedMeta.description = bulkDesc;
+            // update image using new display index
+            updatedMeta.image = `${currentCIDBase}/${nft.displayIndex}.png`;
+            await saveNFT(nft.originalId, nft.imageDataURL, updatedMeta, nft.deleted, nft.displayIndex);
             updatedCount++;
         }
-        
         await renderGallery();
-        alert(`✅ Applied to ${updatedCount} NFTs! Name, Description & CID image path updated.`);
+        alert(`✅ Applied to ${updatedCount} NFTs! Names, descriptions & CID updated with new serial IDs.`);
     }
 
-    // Process Image ZIP
+    // Process Image ZIP - store with original numeric ID parsed from filename
     async function processImageZip(file) {
         const statusDiv = document.getElementById("imageUploadStatus");
         const progressBar = document.getElementById("uploadProgressBar");
         const progressFill = document.getElementById("progressFill");
-        
         if (!file) { alert("Select ZIP file"); return false; }
-        
         statusDiv.innerHTML = "⏳ Processing images...";
         progressBar.style.display = "block";
-        
         try {
             const zip = await JSZip.loadAsync(file);
             let imageEntries = [];
-            
             for (let [path, entry] of Object.entries(zip.files)) {
                 if (!entry.dir && /\.(png|jpg|jpeg|gif|webp)$/i.test(path)) {
                     const filename = path.split('/').pop();
@@ -641,37 +646,28 @@
                     }
                 }
             }
-            
-            if (imageEntries.length === 0) {
-                statusDiv.innerHTML = "❌ No images found";
-                progressBar.style.display = "none";
-                return false;
-            }
-            
+            if (imageEntries.length === 0) throw new Error("No images found");
             let loaded = 0;
             for (let img of imageEntries) {
                 let basename = img.filename.replace(/\.(png|jpg|jpeg|gif|webp)$/i, '');
                 let tokenNum = parseInt(basename, 10);
                 if (isNaN(tokenNum)) continue;
-                
                 const arrayBuffer = await img.entry.async("arraybuffer");
                 const ext = img.filename.split('.').pop().toLowerCase();
                 const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
                 const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
                 const dataURL = `data:${mimeType};base64,${base64}`;
-                
-                const existing = await getNFT(tokenNum);
+                const existing = await getNFTByOriginalId(tokenNum);
                 if (existing) {
-                    await saveNFT(tokenNum.toString(), dataURL, existing.metadata, existing.deleted);
+                    await saveNFT(tokenNum, dataURL, existing.metadata, existing.deleted, existing.displayIndex);
                 } else {
-                    await saveNFT(tokenNum.toString(), dataURL, null, false);
+                    await saveNFT(tokenNum, dataURL, null, false, null);
                 }
                 loaded++;
                 progressFill.style.width = (loaded / imageEntries.length) * 100 + "%";
             }
-            
-            await renderGallery();
-            statusDiv.innerHTML = `✅ Loaded ${loaded} images`;
+            await renumberAllActiveNFTs();
+            statusDiv.innerHTML = `✅ Loaded ${loaded} images, IDs re-indexed sequentially.`;
             statusDiv.className = "status success";
             progressBar.style.display = "none";
             return true;
@@ -683,41 +679,35 @@
         }
     }
 
-    // Process Metadata ZIP (merge with existing)
+    // Process Metadata ZIP
     async function processMetadataZip(file) {
         const statusDiv = document.getElementById("metaUploadStatus");
         if (!file) { alert("Select metadata ZIP"); return false; }
-        
         statusDiv.innerHTML = "⏳ Processing metadata...";
-        
         try {
             const zip = await JSZip.loadAsync(file);
             let matched = 0;
-            
             for (let [path, entry] of Object.entries(zip.files)) {
                 if (!entry.dir && /\.json$/i.test(path)) {
                     const filename = path.split('/').pop();
                     let basename = filename.replace(/\.json$/i, '');
                     let tokenNum = parseInt(basename, 10);
                     if (isNaN(tokenNum)) continue;
-                    
                     const jsonText = await entry.async("string");
                     try {
                         const metaObj = JSON.parse(jsonText);
-                        const existing = await getNFT(tokenNum);
+                        const existing = await getNFTByOriginalId(tokenNum);
                         if (existing) {
-                            // Merge: keep existing image but update metadata
-                            await saveNFT(tokenNum.toString(), existing.imageDataURL, metaObj, existing.deleted);
+                            await saveNFT(tokenNum, existing.imageDataURL, metaObj, existing.deleted, existing.displayIndex);
                         } else {
-                            await saveNFT(tokenNum.toString(), null, metaObj, false);
+                            await saveNFT(tokenNum, null, metaObj, false, null);
                         }
                         matched++;
                     } catch(e) {}
                 }
             }
-            
-            await renderGallery();
-            statusDiv.innerHTML = `✅ Matched ${matched} metadata files`;
+            await renumberAllActiveNFTs();
+            statusDiv.innerHTML = `✅ Processed ${matched} metadata files, auto-renumbered.`;
             statusDiv.className = "status success";
             return true;
         } catch (err) {
@@ -727,202 +717,163 @@
         }
     }
 
-    // Render gallery with marketplace style
+    // Render: using displayIndex as visible ID
     async function renderGallery() {
         const container = document.getElementById("nftGridContainer");
         const countSpan = document.getElementById("nftCount");
-        
-        const allNFTs = await getAllNFTs();
-        const active = allNFTs.filter(n => !n.deleted).sort((a,b) => a.tokenId - b.tokenId);
-        
+        const all = await getAllNFTsRaw();
+        const active = all.filter(n => !n.deleted).sort((a,b) => a.displayIndex - b.displayIndex);
         countSpan.innerHTML = `(${active.length} items)`;
-        
         if (active.length === 0) {
             container.innerHTML = `<div class="empty-state">✨ No NFTs available. Upload your ZIP files.</div>`;
             return;
         }
-        
         let html = "";
         for (let nft of active) {
             const imgSrc = nft.imageDataURL || "https://placehold.co/400x400/1e293b/818cf8?text=No+Image";
-            const name = nft.metadata?.name || `NFT #${nft.tokenId}`;
+            const name = nft.metadata?.name || `NFT #${nft.displayIndex}`;
             html += `
-                <div class="nft-card" data-id="${nft.tokenId}">
+                <div class="nft-card" data-original-id="${nft.originalId}" data-display="${nft.displayIndex}">
                     <div class="nft-image">
                         <img src="${imgSrc}" alt="nft" onerror="this.src='https://placehold.co/400x400/1e293b/ef4444?text=Error'">
                     </div>
                     <div class="nft-info">
                         <div class="nft-name">${escapeHtml(name.substring(0, 35))}</div>
-                        <div class="nft-id">ID: ${nft.tokenId}</div>
-                        <button class="delete-nft-btn" data-id="${nft.tokenId}">🗑 Delete</button>
+                        <div class="nft-id">Serial ID: ${nft.displayIndex}</div>
+                        <button class="delete-nft-btn" data-original-id="${nft.originalId}">🗑 Delete</button>
                     </div>
                 </div>
             `;
         }
         container.innerHTML = html;
-        
         document.querySelectorAll(".delete-nft-btn").forEach(btn => {
             btn.addEventListener("click", async (e) => {
                 e.stopPropagation();
-                const id = btn.getAttribute("data-id");
-                await updateDeletedStatus(id, true);
+                const origId = btn.getAttribute("data-original-id");
+                await updateDeletedStatusAndRenumber(parseInt(origId), true);
                 await renderGallery();
             });
         });
-        
         document.querySelectorAll(".nft-card").forEach(card => {
             card.addEventListener("click", async (e) => {
                 if (e.target.classList.contains("delete-nft-btn")) return;
-                const id = card.getAttribute("data-id");
-                const nft = await getNFT(id);
+                const origId = card.getAttribute("data-original-id");
+                const nft = await getNFTByOriginalId(parseInt(origId));
                 if (nft) showModal(nft);
             });
         });
     }
-    
-    // NFT Market Style Modal
+
     function showModal(nft) {
         const modal = document.getElementById("nftModal");
         const modalBody = document.getElementById("modalBodyContainer");
         const modalTitle = document.getElementById("modalTokenTitle");
-        
         const imgSrc = nft.imageDataURL || "https://placehold.co/400x400/1e293b/818cf8?text=No+Image";
         const metadata = nft.metadata || {};
-        const name = metadata.name || `NFT #${nft.tokenId}`;
+        const name = metadata.name || `NFT #${nft.displayIndex}`;
         const description = metadata.description || "No description available";
         const attributes = metadata.attributes || [];
-        
         modalTitle.innerHTML = name;
-        
         let attributesHtml = '<div class="attribute-list">';
         for (let attr of attributes) {
-            attributesHtml += `
-                <div class="attribute-item">
-                    <div class="attribute-trait">${escapeHtml(attr.trait_type || 'Attribute')}</div>
-                    <div class="attribute-value">${escapeHtml(attr.value || 'Unknown')}</div>
-                </div>
-            `;
+            attributesHtml += `<div class="attribute-item"><div class="attribute-trait">${escapeHtml(attr.trait_type || 'Attribute')}</div><div class="attribute-value">${escapeHtml(attr.value || 'Unknown')}</div></div>`;
         }
         attributesHtml += '</div>';
-        
         modalBody.innerHTML = `
             <img src="${imgSrc}" alt="${name}">
-            <div style="margin-bottom: 1rem;">
-                <p style="color: #a5b4fc; font-size: 0.8rem;">Token ID: ${nft.tokenId}</p>
-                <p style="margin-top: 0.5rem; line-height: 1.5;">${escapeHtml(description)}</p>
-            </div>
-            <hr style="border-color: #252e3f; margin: 1rem 0;">
-            <h4 style="margin-bottom: 0.8rem;">📊 Attributes</h4>
-            ${attributesHtml}
-            <hr style="border-color: #252e3f; margin: 1rem 0;">
-            <div style="background: #0c0f18; padding: 0.8rem; border-radius: 0.8rem;">
-                <small style="color: #818cf8;">📁 Image CID Path:</small>
-                <code style="display: block; font-size: 0.7rem; margin-top: 4px; word-break: break-all;">${escapeHtml(metadata.image || 'Not set')}</code>
-            </div>
+            <div style="margin-bottom: 1rem;"><p style="color: #a5b4fc; font-size: 0.8rem;">Live Serial ID: ${nft.displayIndex} (Original key: ${nft.originalId})</p><p style="margin-top: 0.5rem; line-height: 1.5;">${escapeHtml(description)}</p></div>
+            <hr style="border-color: #252e3f; margin: 1rem 0;"><h4>📊 Attributes</h4>${attributesHtml}
+            <hr><div style="background:#0c0f18;padding:0.8rem;border-radius:0.8rem;"><small>📁 Image CID Path:</small><code style="display:block;font-size:0.7rem;">${escapeHtml(metadata.image || 'Not set')}</code></div>
         `;
         modal.style.display = "flex";
     }
-    
-    // Download functions
+
+    // Download with renumbered filenames (1..N)
     async function downloadActiveImages() {
-        const all = await getAllNFTs();
-        const active = all.filter(n => !n.deleted).sort((a,b) => a.tokenId - b.tokenId);
+        const all = await getAllNFTsRaw();
+        const active = all.filter(n => !n.deleted).sort((a,b) => a.displayIndex - b.displayIndex);
         if (active.length === 0) { alert("No active NFTs"); return; }
-        
         const zip = new JSZip();
         for (let nft of active) {
             if (nft.imageDataURL) {
                 const base64Data = nft.imageDataURL.split(',')[1];
                 const ext = nft.imageDataURL.includes('png') ? 'png' : 'jpg';
-                zip.file(`${nft.tokenId}.${ext}`, base64Data, { base64: true });
+                zip.file(`${nft.displayIndex}.${ext}`, base64Data, { base64: true });
             }
         }
         const blob = await zip.generateAsync({ type: "blob" });
-        saveAs(blob, `nft_images_${Date.now()}.zip`);
+        saveAs(blob, `nft_images_renumbered_${Date.now()}.zip`);
     }
-    
+
     async function downloadActiveMetadata() {
-        const all = await getAllNFTs();
-        const active = all.filter(n => !n.deleted).sort((a,b) => a.tokenId - b.tokenId);
+        const all = await getAllNFTsRaw();
+        const active = all.filter(n => !n.deleted).sort((a,b) => a.displayIndex - b.displayIndex);
         if (active.length === 0) { alert("No metadata"); return; }
-        
         const zip = new JSZip();
         for (let nft of active) {
-            const meta = nft.metadata || { name: `NFT ${nft.tokenId}` };
-            zip.file(`${nft.tokenId}.json`, JSON.stringify(meta, null, 2));
+            const meta = nft.metadata || { name: `NFT ${nft.displayIndex}` };
+            // update image path to match new serial if needed but preserve structure
+            const finalMeta = { ...meta };
+            if (!finalMeta.image) finalMeta.image = `${currentCIDBase}/${nft.displayIndex}.png`;
+            zip.file(`${nft.displayIndex}.json`, JSON.stringify(finalMeta, null, 2));
         }
         const blob = await zip.generateAsync({ type: "blob" });
-        saveAs(blob, `nft_metadata_${Date.now()}.zip`);
+        saveAs(blob, `nft_metadata_renumbered_${Date.now()}.zip`);
     }
-    
+
     async function downloadDeletedBundle() {
-        const all = await getAllNFTs();
-        const deleted = all.filter(n => n.deleted).sort((a,b) => a.tokenId - b.tokenId);
+        const all = await getAllNFTsRaw();
+        const deleted = all.filter(n => n.deleted);
         if (deleted.length === 0) { alert("No deleted NFTs"); return; }
-        
         const imagesZip = new JSZip();
         const metadataZip = new JSZip();
-        
         for (let nft of deleted) {
             if (nft.imageDataURL) {
                 const base64Data = nft.imageDataURL.split(',')[1];
                 const ext = nft.imageDataURL.includes('png') ? 'png' : 'jpg';
-                imagesZip.file(`${nft.tokenId}.${ext}`, base64Data, { base64: true });
+                imagesZip.file(`original_${nft.originalId}.${ext}`, base64Data, { base64: true });
             }
-            const meta = nft.metadata || { name: `Deleted NFT ${nft.tokenId}` };
-            metadataZip.file(`${nft.tokenId}.json`, JSON.stringify(meta, null, 2));
+            const meta = nft.metadata || { name: `Deleted NFT origId ${nft.originalId}` };
+            metadataZip.file(`original_${nft.originalId}.json`, JSON.stringify(meta, null, 2));
         }
-        
         const master = new JSZip();
-        master.file("images.zip", await imagesZip.generateAsync({ type: "blob" }));
-        master.file("metadata.zip", await metadataZip.generateAsync({ type: "blob" }));
+        master.file("images_deleted.zip", await imagesZip.generateAsync({ type: "blob" }));
+        master.file("metadata_deleted.zip", await metadataZip.generateAsync({ type: "blob" }));
         saveAs(await master.generateAsync({ type: "blob" }), `deleted_bundle_${Date.now()}.zip`);
     }
-    
+
     async function hardDeleteAll() {
-        if (confirm("⚠️ Delete ALL NFTs permanently?")) {
+        if (confirm("⚠️ PERMANENTLY DELETE ALL NFTs? This will wipe everything.")) {
             await clearAllNFTs();
             await renderGallery();
         }
     }
-    
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-    }
-    
-    // Event Listeners
+
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+
     document.getElementById("uploadImagesBtn").addEventListener("click", async () => {
         const input = document.getElementById("imageZipInput");
         if (!input.files[0]) { alert("Select ZIP file"); return; }
         await processImageZip(input.files[0]);
         input.value = '';
     });
-    
     document.getElementById("uploadMetadataBtn").addEventListener("click", async () => {
         const input = document.getElementById("metaZipInput");
         if (!input.files[0]) { alert("Select metadata ZIP"); return; }
         await processMetadataZip(input.files[0]);
         input.value = '';
     });
-    
     document.getElementById("applyBulkChangesBtn").addEventListener("click", applyBulkEdits);
     document.getElementById("downloadAllImagesAction").addEventListener("click", downloadActiveImages);
     document.getElementById("downloadAllMetadataAction").addEventListener("click", downloadActiveMetadata);
     document.getElementById("downloadDeletedBundleBtn").addEventListener("click", downloadDeletedBundle);
     document.getElementById("hardDeleteAllBtn").addEventListener("click", hardDeleteAll);
-    document.getElementById("closeModalBtn").addEventListener("click", () => {
-        document.getElementById("nftModal").style.display = "none";
-    });
-    window.onclick = (e) => {
-        const modal = document.getElementById("nftModal");
-        if (e.target === modal) modal.style.display = "none";
-    };
-    
-    // Initialize
+    document.getElementById("closeModalBtn").addEventListener("click", () => document.getElementById("nftModal").style.display = "none");
+    window.onclick = (e) => { if (e.target === document.getElementById("nftModal")) document.getElementById("nftModal").style.display = "none"; };
+
     (async () => {
         await openDB();
-        await renderGallery();
+        await renumberAllActiveNFTs();
     })();
 </script>
 </body>
